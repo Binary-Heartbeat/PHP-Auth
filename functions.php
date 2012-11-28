@@ -172,15 +172,63 @@
 	}
 	class auth {
 		public static function hashPass($auth, $password) { // this will be used to generate a hash
-			if((defined("CRYPT_SHA512") && CRYPT_SHA512) and (!$auth['hash']['user_defined'] or ($auth['hash']['user_defined'] && $auth['hash']['SHA512']))) {
+			if(
+				(
+					defined("CRYPT_SHA512")
+					and
+					CRYPT_SHA512
+				)
+				and
+				(
+					!$auth['hash']['user_defined']
+					or
+					(
+						$auth['hash']['user_defined']
+						and
+						$auth['hash']['SHA512']
+					)
+				)
+			) {
 				_debug($auth, 'Using CRYPT_SHA512 (6).');
 				$algo = '6';
 				if($auth['hash']['user_defined']) { $cost=$auth['hash']['cost']; } else { $cost='rounds=5000'; }
-			} elseif((defined("CRYPT_SHA256") && CRYPT_SHA256) and (!$auth['hash']['user_defined'] or ($auth['hash']['user_defined'] && $auth['hash']['SHA256']))) {
+			} elseif(
+				(
+					defined("CRYPT_SHA256")
+					and
+					CRYPT_SHA256
+				)
+				and
+				(
+					!$auth['hash']['user_defined']
+					or
+					(
+						$auth['hash']['user_defined']
+						and
+						$auth['hash']['SHA256']
+					)
+				)
+			) {
 				_debug($auth, 'Using CRYPT_SHA256 (5).');
 				$algo = '5';
 				if($auth['hash']['user_defined']) { $cost=$auth['hash']['cost']; } else { $cost='rounds=5000'; }
-			} elseif((defined("CRYPT_BLOWFISH") && CRYPT_BLOWFISH) and (!$auth['hash']['user_defined'] or ($auth['hash']['user_defined'] && $auth['hash']['BLOWFISH']))) {
+			} elseif(
+				(
+					defined("CRYPT_BLOWFISH")
+					and
+					CRYPT_BLOWFISH
+				)
+				and
+				(
+					!$auth['hash']['user_defined']
+					or
+					(
+						$auth['hash']['user_defined']
+						and
+						$auth['hash']['BLOWFISH']
+					)
+				)
+			) {
 				if(phpversion() < '5.3.7'){
 					_debug($auth, 'Using CRYPT_BLOWFISH (2a).');
 					$algo = '2a';
@@ -191,7 +239,7 @@
 					if($auth['hash']['user_defined']) { $cost=$auth['hash']['cost']; } else { $cost='10'; }
 				}
 			} else {
-				if(! _debug($auth, 'Binary Heartbeat\'s Auth system uses SHA512, SHA256, or blowfish for password encryption. None of these have been found in the local PHP installation. Arcfolder will now terminate.')) {
+				if(! _debug($auth['debug'], 'Binary Heartbeat\'s Auth system uses SHA512, SHA256, or blowfish for password encryption. None of these have been found in the local PHP installation. Arcfolder will now terminate.')) {
 					echo '<br/>Fatal error: A critical error within this Arcfolder installation has been detected and Arcfolder has terminated. Please inform an administrator at <a href=mailto:"'.$auth['admin_email'].'" >'.$auth['admin_email'].'</a>.'.PHP_EOL;
 					die();
 				}
@@ -213,7 +261,7 @@
 			try {
 				$con = new PDO($auth['con'],$auth['db_user'],$auth['db_pass']); // mysql
 			} catch(PDOException $e) {
-				die ('Oops'); // Exit, displaying an error message
+				die ('Could not connect to database.'); // Exit, displaying an error message
 			}
 			return $con;
 		}
