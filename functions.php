@@ -14,7 +14,7 @@
 			return false;
 		}
 		private static function write($auth,$username,$hash,$ip,$email) {
-				db::query(
+				authdb::query(
 					$auth,
 					"INSERT INTO ".$auth['table_prefix']."users(UserName,UserNiceName,UserPassword,UserEmail,UserIP) VALUES(?,?,?,?,?);",
 					array($username,strtolower($username),$hash,$email,$ip)

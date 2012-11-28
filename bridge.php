@@ -15,7 +15,7 @@
 	$auth['fs_root']		=	$_['fs_root']; // The root directory of the app this auth 'module' is being used in
 	$auth['localization']	=	$_['localization']; // Localization to use
 	$auth['admin_email']	=	$_['admin_email'];
-	$auth['debug']			=	true; // Whether or not to display debug messages
+	$auth['debug']			=	$_['debug']; // Whether or not to display debug messages
 
 
 // Auth-specific config. This is independent from the application this is being paired with. In most cases the default values are suitable.
@@ -49,17 +49,20 @@
 	if($auth['hash']['user_defined'] and !$auth['hash']['SHA512'] and !$auth['hash']['SHA256'] and !$auth['hash']['BLOWFISH'])
 	{ echo '<br/>Fatal error: Password hashing has been set to user-defined, but the type of hashing has not been specified.'.PHP_EOL; die(); }
 
-	if(defined($auth['salt'])) {
-		_debug($auth, '$salt obtained from .htaccess');
+	require_once($authpath.'functions.php');
+	require_once($authpath.'localizations/'.$auth['localization'].'.php');
+	if(file_exists($authpath.'salt.php')) { require_once($authpath.'salt.php'); }
+
+	if(array_key_exists('salt',$auth)) {
+		_debug($auth, '$salt obtained from salt.php');
 	} else {
-		if(file_put_contents($authpath.'salt.php', '$auth[\'salt\']='.substr(sha1(mt_rand()),0,22))) {
-			_debug($auth, '$salt written to .htaccess');
+		$salt=substr(sha1(mt_rand()),0,22);
+		if(file_put_contents($authpath.'salt.php', '<?php'.PHP_EOL.'$auth[\'salt\']=\''.$salt.'\';')) {
+			echo $authpath.'salt.php';
+			_debug($auth, '$salt written to salt.php');
+			require_once($authpath.'salt.php');
 		} else {
-			echo "CRITICAL ERROR, Environmental Variable 'salt' missing from .htaccess, unable to write file.";
+			echo "CRITICAL ERROR: Variable 'salt' missing from salt.php, unable to write file.";
 			die();
 		}
 	}
-
-	require_once($authpath.'functions.php');
-	require_once($authpath.'salt.php');
-	require_once($authpath.'localizations/'.$auth['localization'].'.php');
