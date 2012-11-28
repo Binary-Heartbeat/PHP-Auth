@@ -14,9 +14,11 @@
 			return false;
 		}
 		private static function write($auth,$username,$hash,$ip,$email) {
-				$query="INSERT INTO ".$auth['table_prefix']."users(UserName,UserNiceName,UserPassword,UserEmail,UserIP) VALUES(?,?,?,?,?);";
-				$statement=authdb::connect($auth)->prepare($query);
-				$statement->execute(array($username,strtolower($username),$hash,$email,$ip));
+				db::query(
+					$auth,
+					"INSERT INTO ".$auth['table_prefix']."users(UserName,UserNiceName,UserPassword,UserEmail,UserIP) VALUES(?,?,?,?,?);",
+					array($username,strtolower($username),$hash,$email,$ip)
+				);
 		}
 	}
 	class validate_username {
@@ -31,7 +33,7 @@
 			return false;
 		}
 		public static function characters($auth, $authLoc, $username) {
-			if(preg_match('/[^a-zA-Z0123456789\-_]/', $username)) {
+			if(preg_match($auth['validate_username']['regex'], $username)) {
 				echo '<br/>'.$authLoc['reg_err_username_invalid'].PHP_EOL;
 				return false;
 			} else {
@@ -49,10 +51,10 @@
 			}
 		}
 		public static function length($auth, $authLoc, $username) {
-			if(strlen($username) > 20) { // check if $username is longer than 20 characters
+			if(strlen($username) > intval($auth['validate_username']['max_length'])) {
 				echo '<br/>'.$authLoc['reg_err_username_long'].PHP_EOL;
 				return false;
-			} elseif(strlen($username) < 3) { // check if $username is shorter than 3 characters
+			} elseif(strlen($username) < intval($auth['validate_username']['min_length'])) {
 				echo '<br/>'.$authLoc['reg_err_username_short'].PHP_EOL;
 				return false;
 			} else {
@@ -82,10 +84,10 @@
 			}
 		}
 		public static function length ($auth, $authLoc, $password) {
-			if(strlen($password) < 8) { // Hmm, better make sure the password is an acceptable length
+			if(strlen($password) < intval($auth['validate_password']['min_length'])) { // Hmm, better make sure the password is an acceptable length
 				echo '<br/>'.$authLoc['validate_password_length_short_error'].PHP_EOL;
 				return false;
-			} elseif (strlen($password) > 64) { // Lets make sure they don't exceed the length set for the database
+			} elseif (strlen($password) > intval($auth['validate_password']['max_length'])) { // Lets make sure they don't exceed the length set for the database
 				echo '<br/>'.$authLoc['validate_password_length_long_error'].PHP_EOL;
 				return false;
 			} else {
@@ -120,7 +122,7 @@
 
 			_debug($auth, '$password_strength = '.$password_strength);
 
-			if($password_strength < 2) { // Make sure that the password contains at least two types of characters
+			if($password_strength < intval($auth['validate_password']['strength'])) { // Make sure that the password contains at least two types of characters
 				echo '<br/>'.$authLoc['validate_password_strength_error'].PHP_EOL;
 				return false;
 			} else {
@@ -170,27 +172,27 @@
 	}
 	class auth {
 		public static function hashPass($auth, $password) { // this will be used to generate a hash
-			if(defined("CRYPT_SHA512") and CRYPT_SHA512) {
+			if((defined("CRYPT_SHA512") && CRYPT_SHA512) and (!$auth['hash']['user_defined'] or ($auth['hash']['user_defined'] && $auth['hash']['SHA512']))) {
 				_debug($auth, 'Using CRYPT_SHA512 (6).');
 				$algo = '6';
-				$cost='rounds=5000';
-			} elseif(defined("CRYPT_SHA256") and CRYPT_SHA256) {
+				if($auth['hash']['user_defined']) { $cost=$auth['hash']['cost']; } else { $cost='rounds=5000'; }
+			} elseif((defined("CRYPT_SHA256") && CRYPT_SHA256) and (!$auth['hash']['user_defined'] or ($auth['hash']['user_defined'] && $auth['hash']['SHA256']))) {
 				_debug($auth, 'Using CRYPT_SHA256 (5).');
 				$algo = '5';
-				$cost='rounds=5000';
-			} elseif(defined("CRYPT_BLOWFISH") and CRYPT_BLOWFISH) {
+				if($auth['hash']['user_defined']) { $cost=$auth['hash']['cost']; } else { $cost='rounds=5000'; }
+			} elseif((defined("CRYPT_BLOWFISH") && CRYPT_BLOWFISH) and (!$auth['hash']['user_defined'] or ($auth['hash']['user_defined'] && $auth['hash']['BLOWFISH']))) {
 				if(phpversion() < '5.3.7'){
 					_debug($auth, 'Using CRYPT_BLOWFISH (2a).');
 					$algo = '2a';
-					$cost='10';
+					if($auth['hash']['user_defined']) { $cost=$auth['hash']['cost']; } else { $cost='10'; }
 				} else {
 					_debug($auth, 'Using CRYPT_BLOWFISH (2y).');
 					$algo = '2y';
-					$cost='10';
+					if($auth['hash']['user_defined']) { $cost=$auth['hash']['cost']; } else { $cost='10'; }
 				}
 			} else {
-				if(! _debug($auth, 'Arcfolder uses SHA512, SHA256, or blowfish for password encryption. None of these have been found in the local PHP installation. Arcfolder will now terminate.')) {
-					_error('A critical error within this Arcfolder installation has been detected and Arcfolder has terminated. Please inform an administrator at '.$auth['admin_email']);
+				if(! _debug($auth, 'Binary Heartbeat\'s Auth system uses SHA512, SHA256, or blowfish for password encryption. None of these have been found in the local PHP installation. Arcfolder will now terminate.')) {
+					echo '<br/>Fatal error: A critical error within this Arcfolder installation has been detected and Arcfolder has terminated. Please inform an administrator at <a href=mailto:"'.$auth['admin_email'].'" >'.$auth['admin_email'].'</a>.'.PHP_EOL;
 					die();
 				}
 				die();
@@ -214,6 +216,11 @@
 				die ('Oops'); // Exit, displaying an error message
 			}
 			return $con;
+		}
+		public static function query($auth,$query,$values) {
+			$statement = self::connect($auth)->prepare($query);
+			$statement->execute($values);
+			self::close($statement);
 		}
 		public static function close($statement) {
 			return $statement->closeCursor();
@@ -242,22 +249,10 @@
 			}
 		}
 		public static function updateRow($auth, $table, $column, $value, $findColumn, $findValue) {
-			$con = self::connect($auth);
 			$query = "UPDATE ".$auth['table_prefix'].$table." SET ".$column."='".$value."' WHERE `".$findColumn."` = '".$findValue."';";
 
-			$statement = $con->prepare($query);
+			$statement = self::connect($auth)->prepare($query);
 			$statement->execute();
 			self::close($statement);
-		}
-	}
-
-	if($auth['salt']=getenv('SALT')) {
-		_debug($auth, '$salt obtained from .htaccess');
-	} else {
-		if(file_put_contents($auth['fs_root'].'.htaccess', 'SetEnv SALT '.substr(sha1(mt_rand()),0,22), FILE_APPEND)) {
-			_debug($auth, '$salt written to .htaccess');
-		} else {
-			echo "CRITICAL ERROR, Environmental Variable 'salt' missing from .htaccess, unable to write file.";
-			die();
 		}
 	}

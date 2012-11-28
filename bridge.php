@@ -14,7 +14,52 @@
 	$auth['table_prefix']	=	$_['table_prefix']; // Prefix for the 'users' table
 	$auth['fs_root']		=	$_['fs_root']; // The root directory of the app this auth 'module' is being used in
 	$auth['localization']	=	$_['localization']; // Localization to use
+	$auth['admin_email']	=	$_['admin_email'];
 	$auth['debug']			=	true; // Whether or not to display debug messages
 
-	require_once($authpath.'auth.php');
+
+// Auth-specific config. This is independent from the application this is being paired with. In most cases the default values are suitable.
+	// Password
+		$auth['validate_password']['min_length'] = '8'; // Min length. Numerical values only.
+		$auth['validate_password']['max_length'] = '64'; // Max length. Numerical values only.
+		/* From the character categories letters, numbers, and symbols, how many types have to be used when creating a password
+		Numerical values ranging from 1 to 3 inclusive only */
+		$auth['validate_password']['strength'] = '2';
+
+	// Username
+		$auth['validate_username']['min_length'] = '3'; // Min length. Numerical values only.
+		$auth['validate_username']['max_length'] = '20'; // Max length. Numerical values only.
+		$auth['validate_username']['regex']='/[^a-zA-Z0123456789\-_]/'; // Regex for valid characters.
+
+	// Password hashing
+		$auth['hash']['user_defined']=false; // true or false. If false, nothing below this point will be used
+		// If the above line is set to true, ONE of these must also be set to true
+		$auth['hash']['SHA512']=false; // true or false. Specifies SHA512 for hashing
+		$auth['hash']['SHA256']=false; // true or false. Specifies SHA256 for hashing
+		$auth['hash']['BLOWFISH']=false; // true or false. Specifies BLOWFISH for hashing
+
+		// default for SHA512 and SHA256 is 'rounds=5000'
+		// default for BLOWFISH is '10'
+		// refer to http://php.net/manual/en/function.crypt.php if you are unsure about this
+		$auth['hash']['cost']='rounds=5000';
+
+
+	// No touchy beyond this line
+
+	if($auth['hash']['user_defined'] and !$auth['hash']['SHA512'] and !$auth['hash']['SHA256'] and !$auth['hash']['BLOWFISH'])
+	{ echo '<br/>Fatal error: Password hashing has been set to user-defined, but the type of hashing has not been specified.'.PHP_EOL; die(); }
+
+	if(defined($auth['salt'])) {
+		_debug($auth, '$salt obtained from .htaccess');
+	} else {
+		if(file_put_contents($authpath.'salt.php', '$auth[\'salt\']='.substr(sha1(mt_rand()),0,22))) {
+			_debug($auth, '$salt written to .htaccess');
+		} else {
+			echo "CRITICAL ERROR, Environmental Variable 'salt' missing from .htaccess, unable to write file.";
+			die();
+		}
+	}
+
+	require_once($authpath.'functions.php');
+	require_once($authpath.'salt.php');
 	require_once($authpath.'localizations/'.$auth['localization'].'.php');
