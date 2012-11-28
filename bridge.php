@@ -32,11 +32,7 @@
 		$auth['validate_username']['regex']='/[^a-zA-Z0123456789\-_]/'; // Regex for valid characters.
 
 	// Password hashing
-		$auth['hash']['user_defined']=false; // true or false. If false, nothing below this point will be used
-		// If the above line is set to true, ONE of these must also be set to true
-		$auth['hash']['SHA512']=false; // true or false. Specifies SHA512 for hashing
-		$auth['hash']['SHA256']=false; // true or false. Specifies SHA256 for hashing
-		$auth['hash']['BLOWFISH']=false; // true or false. Specifies BLOWFISH for hashing
+		// $auth['hash']['preference']='SHA512'; // Uncomment to use. Comment to deactivate. Can be 'SHA512', 'SHA256', or 'BLOWFISH'
 
 		// default for SHA512 and SHA256 is 'rounds=5000'
 		// default for BLOWFISH is '10'
@@ -49,8 +45,6 @@
 	if($auth['hash']['user_defined'] and !$auth['hash']['SHA512'] and !$auth['hash']['SHA256'] and !$auth['hash']['BLOWFISH'])
 	{ echo '<br/>Fatal error: Password hashing has been set to user-defined, but the type of hashing has not been specified.'.PHP_EOL; die(); }
 
-	require_once($authpath.'functions.php');
-	require_once($authpath.'localizations/'.$auth['localization'].'.php');
 	if(file_exists($authpath.'salt.php')) { require_once($authpath.'salt.php'); }
 
 	if(array_key_exists('salt',$auth)) {
@@ -66,3 +60,11 @@
 			die();
 		}
 	}
+
+	require_once($authpath.'classes/auth.php');
+	require_once($authpath.'classes/authdb.php');
+	require_once($authpath.'classes/register.php');
+	require_once($authpath.'classes/validate_email.php');
+	require_once($authpath.'classes/validate_password.php');
+	require_once($authpath.'classes/validate_username.php');
+	require_once($authpath.'localizations/'.$auth['localization'].'.php');
