@@ -33,7 +33,7 @@
 		}
 		public static function hashPass($auth, $password) { // this will be used to generate a hash
 			if(self::SHA512($auth)) {
-				_debug($auth, 'Using CRYPT_SHA512 (6).');
+				core::debug($auth, 'Using CRYPT_SHA512 (6).');
 				$algo = '6';
 				if($auth['hash']['user_defined']) {
 					$cost=$auth['hash']['cost'];
@@ -41,16 +41,20 @@
 					$cost='rounds=5000';
 				}
 			} elseif(self::SHA256($auth)) {
-				_debug($auth, 'Using CRYPT_SHA256 (5).');
+				core::debug($auth, 'Using CRYPT_SHA256 (5).');
 				$algo = '5';
-				if(isset($auth['hash']['preference'])) { $cost=$auth['hash']['cost']; } else { $cost='rounds=5000'; }
+				if(isset($auth['hash']['preference'])) {
+					$cost=$auth['hash']['cost'];
+				} else {
+					$cost='rounds=5000';
+				}
 			} elseif(self::BLOWFISH($auth)) {
 				if(phpversion() < '5.3.7'){
-					_debug($auth, 'Using CRYPT_BLOWFISH (2a).');
+					core::debug($auth, 'Using CRYPT_BLOWFISH (2a).');
 					$algo = '2a';
 					if(isset($auth['hash']['preference'])) { $cost=$auth['hash']['cost']; } else { $cost='10'; }
 				} else {
-					_debug($auth, 'Using CRYPT_BLOWFISH (2y).');
+					core::debug($auth, 'Using CRYPT_BLOWFISH (2y).');
 					$algo = '2y';
 					if(isset($auth['hash']['preference'])) {
 						$cost=$auth['hash']['cost'];
@@ -59,7 +63,7 @@
 					}
 				}
 			} else {
-				if(! _debug($auth['debug'],
+				if(!core::debug($_,
 					'Binary Heartbeat\'s Auth system uses SHA512, SHA256, or blowfish for password encryption. None of these have been found in the local PHP installation. Arcfolder will now terminate.')) {
 					echo '<br/>Fatal error: A critical error within this Arcfolder installation has been detected and Arcfolder has terminated. Please inform an administrator at <a href=mailto:"'.$auth['admin_email'].'" >'.$auth['admin_email'].'</a>.'.PHP_EOL;
 					die();
