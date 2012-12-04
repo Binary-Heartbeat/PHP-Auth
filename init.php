@@ -7,6 +7,8 @@
 	require_once($_['fs_root'].'auth/classes/validate_username.php');
 	require_once($_['fs_root'].'auth/localizations/'.$_['localization'].'.php');
 
+	require_once($_['fs_root'].'auth/classes/recaptchalib.php');
+
 	if(isset($auth['hash']['user_defined']) and $auth['hash']['user_defined'] and !$auth['hash']['SHA512'] and !$auth['hash']['SHA256'] and !$auth['hash']['BLOWFISH'])
 	{ echo '<br/>Fatal error: Password hashing has been set to user-defined, but the type of hashing has not been specified.'.PHP_EOL; die(); }
 

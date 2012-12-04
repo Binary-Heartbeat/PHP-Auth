@@ -31,7 +31,7 @@
 			}
 			return false;
 		}
-		public static function hashPass($auth, $password) { // this will be used to generate a hash
+		public static function hashPass($_, $auth, $password) { // this will be used to generate a hash
 			if(self::SHA512($auth)) {
 				core::debug($auth, 'Using CRYPT_SHA512 (6).');
 				$algo = '6';
@@ -73,10 +73,10 @@
 			$salt = '$'.$algo.'$'.$cost.'$'.$auth['salt'].'$';
 			return crypt($password, $salt);
 		}
-		public static function checkPass($auth,$authLoc,$password,$hash) { // compare a password against a hash
-			return (auth::hashPass($auth,$password) == $hash);
+		public static function checkPass($_,$auth,$authLoc,$password,$hash) { // compare a password against a hash
+			return (auth::hashPass($_,$auth,$password) == $hash);
 		}
 		public static function makeToken($auth) {
-			return auth::hash($auth,md5(rand(1000000,9999999)),md5(rand(1000000,9999999)));
+			return md5(rand(1000000,9999999)).md5(rand(1000000,9999999));
 		}
 	}
