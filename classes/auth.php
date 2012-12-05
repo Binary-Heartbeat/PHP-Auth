@@ -3,7 +3,7 @@
 	class auth {
 		private static function SHA512($auth) {
 			if(defined("CRYPT_SHA512") and CRYPT_SHA512) {
-				if(!$auth['hash']['preference']) {
+				if(!isset($auth['hash']['preference'])) {
 					return true;
 				} elseif($auth['hash']['preference']='SHA512') {
 					return true;
@@ -33,15 +33,15 @@
 		}
 		public static function hashPass($_, $auth, $password) { // this will be used to generate a hash
 			if(self::SHA512($auth)) {
-				core::debug($auth, 'Using CRYPT_SHA512 (6).');
+				core::debug($_, 'Using CRYPT_SHA512 (6).');
 				$algo = '6';
-				if($auth['hash']['user_defined']) {
+				if(isset($auth['hash']['preference'])) {
 					$cost=$auth['hash']['cost'];
 				} else {
 					$cost='rounds=5000';
 				}
 			} elseif(self::SHA256($auth)) {
-				core::debug($auth, 'Using CRYPT_SHA256 (5).');
+				core::debug($_, 'Using CRYPT_SHA256 (5).');
 				$algo = '5';
 				if(isset($auth['hash']['preference'])) {
 					$cost=$auth['hash']['cost'];
@@ -50,11 +50,11 @@
 				}
 			} elseif(self::BLOWFISH($auth)) {
 				if(phpversion() < '5.3.7'){
-					core::debug($auth, 'Using CRYPT_BLOWFISH (2a).');
+					core::debug($_, 'Using CRYPT_BLOWFISH (2a).');
 					$algo = '2a';
 					if(isset($auth['hash']['preference'])) { $cost=$auth['hash']['cost']; } else { $cost='10'; }
 				} else {
-					core::debug($auth, 'Using CRYPT_BLOWFISH (2y).');
+					core::debug($_, 'Using CRYPT_BLOWFISH (2y).');
 					$algo = '2y';
 					if(isset($auth['hash']['preference'])) {
 						$cost=$auth['hash']['cost'];
