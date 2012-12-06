@@ -4,6 +4,7 @@
 
 	if (isset($_POST['trigger_login']) and $_POST['trigger_login']) { // $trigger is set to true by submitting the login form
 		// dump login form variables from post
+		$trigger = true;
 		$usernicename = strtolower($_POST['username']);
 		$password = $_POST['password'];
 
