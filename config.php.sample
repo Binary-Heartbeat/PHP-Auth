@@ -1,9 +1,9 @@
 <?php
 // Auth-specific config. This is independent from the application this is being paired with. In most cases the default values are suitable.
 	// reCAPTCHA - not yet implemented
-		//$auth['recaptcha']['enable'] = true;
-		//$auth['recaptcha']['public_key'] = '';
-		//$auth['recaptcha']['private_key'] = '';
+		$auth['recaptcha']['enable'] = true;
+		$auth['recaptcha']['public_key'] = '';
+		$auth['recaptcha']['private_key'] = '';
 	// Password
 		$auth['validate_password']['min_length'] = '8'; // Min length. Numerical values only.
 		$auth['validate_password']['max_length'] = '64'; // Max length. Numerical values only.

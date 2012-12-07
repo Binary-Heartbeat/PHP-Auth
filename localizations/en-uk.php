@@ -28,7 +28,7 @@
 	$authLoc["login_form_remember"] = "Remember me";
 	// Fail
 	$authLoc["login_err_user"] = "The specified username does not exist.";
-	$authLoc["login_err_match"] = "Incorrect password.";
+	$authLoc["login_err_password"] = "Incorrect password.";
 	//
 	$authLoc["login_success"]="Login successful.";
 
@@ -38,6 +38,7 @@
 	$authLoc["form_password_again"] = "Password Again";
 	$authLoc["form_email"] = "Email";
 	$authLoc["form_email_again"] = "Email Again";
+	$authLoc["form_captcha"] = "Captcha";
 
 // Misc
 	$authLoc["char_min"] = "char min";

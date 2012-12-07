@@ -62,7 +62,6 @@
 			}
 
 			core::debug($_, '$password_strength = '.$password_strength);
-			echo $password;
 
 			if($password_strength < intval($auth['validate_password']['strength'])) { // Make sure that the password contains at least two types of characters
 				return false;

@@ -1,5 +1,71 @@
 <?php
 	class register {
+		public static function invoke($_, $auth, $authLoc) {
+			// We're gonna just assume a lot of things are false until something says otherwise
+			if(isset($_POST['trigger_register']) and $_POST['trigger_register']) {
+				$check['trigger'] = true;
+			} else {
+				$check['trigger'] = false;
+			}
+			$check['username']['valid']=false;
+			$check['username']['chars']=false;
+			$check['username']['long']=false;
+			$check['username']['short']=false;
+			$check['username']['available']=false;
+
+			$check['password']['valid']=false;
+			$check['password']['match']=false;
+			$check['password']['long']=false;
+			$check['password']['short']=false;
+			$check['password']['strength']=false;
+
+			$check['email']['valid']=false;
+			$check['email']['match']=false;
+			$check['email']['syntax']=false;
+			$check['email']['available']=false;
+
+			if ($check['trigger']) {
+				if($auth['recaptcha']['enable']) {
+					$check['captcha']['resp'] = recaptcha_check_answer($auth['recaptcha']['private_key'],
+													$_SERVER["REMOTE_ADDR"],
+													$_POST["recaptcha_challenge_field"],
+													$_POST["recaptcha_response_field"]
+													);
+					if($check['captcha']['resp']->is_valid) {
+						core::debug($_, 'Captcha is valid');
+						$check['captcha']['valid'] = true;
+					} else {
+						$check['captcha']['valid'] = false;
+					}
+				} else {
+					$check['captcha']['valid'] = true;
+				}
+				$check = self::validate(
+					$_,
+					$auth,
+					$_POST['username'],
+					$_POST['password'],
+					$_POST['password_confirm'],
+					$_POST['email'],
+					$_POST['email_confirm'],
+					$check
+				);
+				if($check['valid'] and $check['captcha']['valid']) {
+					if(register::write($_, $_POST['username'], auth::hashPass($_, $auth, $_POST['password']), $_SERVER['REMOTE_ADDR'], $_POST['email'])) {
+						core::log($_,$_POST['username'],1,0);
+						$_SESSION['show_valid_register'] = true;
+						if($_['debug']) {
+							echo '<script>document.location = "login";</script>';
+						} else {
+							header('Location: login');
+						}
+					} else {
+						echo 'Error 482: Somebody shot the server with a 12-gauge. Please contact the system administrator. Serious note: Something went wrong, drop a line by '.$_['admin_email'];
+					}
+				}
+			}
+			return $check;
+		}
 		public static function validate($_, $auth, $username, $password, $password_confirm,$email, $email_confirm, $reg) {
 			$reg=validate_username::all($_, $auth, $username, $reg);
 			if(
@@ -32,37 +98,36 @@
 
 			if($reg['username']['valid'] and $reg['password']['valid'] and $reg['email']['valid'])
 			{
-				self::write($_,$username,auth::hashPass($_, $auth, $password),$_SERVER['REMOTE_ADDR'],$email);
 				$reg['valid'] = true;
 				return $reg;
 			}
 			$reg['valid'] = false;
 			return $reg;
 		}
-		private static function write($_,$username,$hash,$ip,$email) {
-				db::query(
-					$_,
-					"INSERT INTO ".$_['table_prefix']."users(UserName,UserNiceName,UserPassword,UserEmail,UserIP) VALUES(?,?,?,?,?);",
-					array($username,strtolower($username),$hash,$email,$ip)
-				);
+		public static function write($_,$username,$hash,$ip,$email) {
+			if(db::query(
+				$_,
+				"INSERT INTO ".$_['table_prefix']."users(UserName,UserNiceName,UserPassword,UserEmail,UserIP) VALUES(?,?,?,?,?);",
+				array($username,strtolower($username),$hash,$email,$ip))
+			) {
+				return true;
+			}
+			return false;
 		}
 		public static function errors($reg,$authLoc, $auth) {
 			if($reg['trigger']) {
 				if(!$reg['username']['valid']) {
 					if(!$reg['username']['chars']) {
 						echo '<br/>'.$authLoc['validate_username_invalid'].PHP_EOL;
-					}
-					if(!$reg['username']['long']) {
+					} elseif(!$reg['username']['long']) {
 						echo '<br/>'.$authLoc['validate_username_long'].PHP_EOL;
 						' ('.$auth['validate_username']['max_length'].' '.$authLoc['char_max'].')'.
 						PHP_EOL;
-					}
-					if(!$reg['username']['short']) {
+					} elseif(!$reg['username']['short']) {
 						echo '<br/>'.$authLoc['validate_username_short'].PHP_EOL;
 						' ('.$auth['validate_username']['min_length'].' '.$authLoc['char_min'].')'.
 						PHP_EOL;
-					}
-					if(!$reg['username']['available']) {
+					} elseif(!$reg['username']['available']) {
 						echo '<br/>'.$authLoc['validate_username_taken'].PHP_EOL;
 					}
 				}
@@ -70,17 +135,17 @@
 					if(!$reg['password']['match']) {
 						echo '<br/>'.$authLoc['validate_password_match_error'].PHP_EOL;
 					}
-					if(!$reg['password']['long']) {
+					elseif(!$reg['password']['long']) {
 						echo '<br/>'.$authLoc['validate_password_length_long_error'].
 						' ('.$auth['validate_password']['max_length'].' '.$authLoc['char_max'].')'.
 						PHP_EOL;
 					}
-					if(!$reg['password']['short']) {
+					elseif(!$reg['password']['short']) {
 						echo '<br/>'.$authLoc['validate_password_length_short_error'].
 						' ('.$auth['validate_password']['min_length'].' '.$authLoc['char_min'].')'.
 						PHP_EOL;
 					}
-					if(!$reg['password']['strength']) {
+					elseif(!$reg['password']['strength']) {
 						echo '<br/>'.$authLoc['validate_password_strength_error'].PHP_EOL;
 					}
 				}
