@@ -1,9 +1,11 @@
 <?php
+// The contents of this file needs to be copied into the main config for the parent application, or into its database
+
 // Auth-specific config. This is independent from the application this is being paired with. In most cases the default values are suitable.
 	// reCAPTCHA - not yet implemented
 		$auth['recaptcha']['enable'] = true;
-		$auth['recaptcha']['public_key'] = '6LfTxdkSAAAAAMeB4HnE-X1VKPe7nV-t82b1u4w6';
-		$auth['recaptcha']['private_key'] = '6LfTxdkSAAAAAKhcRp1Bd0Y3eqVyyyXj-gWUPwRQ';
+		$auth['recaptcha']['public_key'] = '';
+		$auth['recaptcha']['private_key'] = '';
 	// Password
 		$auth['validate_password']['min_length'] = '8'; // Min length. Numerical values only.
 		$auth['validate_password']['max_length'] = '64'; // Max length. Numerical values only.
@@ -17,7 +19,7 @@
 		$auth['validate_username']['regex']='/[^a-zA-Z0123456789\-_]/'; // Regex for valid characters.
 
 	// Password hashing
-		//$auth['hash']['preference']='SHA512'; // Uncomment to use. Comment to deactivate. Can be 'SHA512', 'SHA256', or 'BLOWFISH'
+		// $auth['hash']['preference']='SHA512'; // Uncomment to use. Comment to deactivate. Can be 'SHA512', 'SHA256', or 'BLOWFISH'
 
 		// default for SHA512 and SHA256 is 'rounds=5000'
 		// default for BLOWFISH is '10'
