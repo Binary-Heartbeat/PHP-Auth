@@ -53,6 +53,15 @@
 				if($check['valid'] and $check['captcha']['valid']) {
 					if(register::write($_, $_POST['username'], auth::hashPass($_, $auth, $_POST['password']), $_SERVER['REMOTE_ADDR'], $_POST['email'])) {
 						core::log($_,$_POST['username'],1,0);
+						if($_['alert_registration']) {
+							$message = "New member has just registered: $_POST[username]";
+							mail::send(
+										$_['admin_email'], // TODO: pull proper recipient email from settings.
+										'New user registration',
+										$_POST['username'].' has registered.',
+										$_['admin_email']
+							);
+						}
 						$_SESSION['show_valid_register'] = true;
 						if($_['debug']) {
 							echo '<script>document.location = "login";</script>';
@@ -105,14 +114,35 @@
 			return $reg;
 		}
 		public static function write($_,$username,$hash,$ip,$email) {
+
+			$query['fields'] = 'UserName,UserNiceName,UserEmail,UserPassword,UserIP,UserGroup';
+			$query['values'] = '?,?,?,?,?,?';
+			$values = array($username,strtolower($username),$email,$hash,$ip,$_['default_group']);
+
+			if($_['activation_method'] !== '0') {
+				$query['fields'] = $query['fields'].',UserActive';
+				$query['values'] = $query['values'].',?';
+				array_push($values, '0');
+
+				if($_['activation_method'] == '1') {
+					$query['fields'] = $query['fields'].',UserActivationKey';
+					$query['values'] = $query['values'].',?';
+					array_push($values, auth::makeKey());
+				}
+			} else {
+				$query['fields'] = $query['fields'].',UserActive';
+				$query['values'] = $query['values'].',?';
+				array_push($values, '1');
+			}
 			if(db::query(
 				$_,
-				"INSERT INTO ".$_['table_prefix']."users(UserName,UserNiceName,UserPassword,UserEmail,UserIP) VALUES(?,?,?,?,?);",
-				array($username,strtolower($username),$hash,$email,$ip))
-			) {
+				"INSERT INTO ".$_['table_prefix']."users(".$query['fields'].") VALUES(".$query['values'].");",
+				$values
+			)) {
 				return true;
+			} else {
+				return false;
 			}
-			return false;
 		}
 		public static function errors($reg,$authLoc, $auth) {
 			if($reg['trigger']) {

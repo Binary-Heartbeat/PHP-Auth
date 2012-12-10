@@ -1,16 +1,16 @@
 <?php
 	class validate_username {
-		public static function all($_, $auth, $username, $reg) {
-			if($reg['username']['chars'] = self::characters($_, $auth, $username)) {
-				if($reg['username']['long'] = self::length_long($_, $auth, $username)) {
-					if($reg['username']['short'] = self::length_short($_, $auth, $username)) {
-						if($reg['username']['available'] = self::available($_, $auth, strtolower($username))) {
-							return $reg;
+		public static function all($_, $auth, $username, $check) {
+			if($check['username']['chars'] = self::characters($_, $auth, $username)) {
+				if($check['username']['long'] = self::length_long($_, $auth, $username)) {
+					if($check['username']['short'] = self::length_short($_, $auth, $username)) {
+						if($check['username']['available'] = self::available($_, $auth, strtolower($username))) {
+							return $check;
 						}
 					}
 				}
 			}
-			return $reg;
+			return $check;
 		}
 		public static function characters($_, $auth, $username) {
 			if(preg_match($auth['validate_username']['regex'], $username)) {
