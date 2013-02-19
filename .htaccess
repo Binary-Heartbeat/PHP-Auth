@@ -1,4 +1,4 @@
-# This entry is for security purposes. It is not recommended to change them.
+# This entry is for security purposes. It is not recommended to change it.
 <filesMatch ^(salt.php)$>
 Order Deny,Allow
 Deny from all

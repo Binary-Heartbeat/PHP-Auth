@@ -80,12 +80,7 @@
                                 $_['admin_email']
                             );
                         }
-                        $_SESSION['show_valid_register'] = true;
-                        if ($_['debug']) {
-                            echo '<script>document.location = "login";</script>';
-                        } else {
-                            header('Location: login');
-                        }
+                        $check['register']['valid'] = true;
                     } else {
                         echo 'Error 482: Somebody shot the server with a 12-gauge. Please contact the system administrator. Serious note: Something went wrong, drop a line by '.$_['admin_email'];
                     }

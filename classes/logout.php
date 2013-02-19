@@ -1,9 +1,16 @@
 <?php
     class logout
     {
-        public static function invoke()
+        public static function invoke($_)
         {
-            ;
+            if (isset($_SESSION['user']['valid']) and $_SESSION['user']['valid'])
+            {
+                session_destroy();
+                $check['logout']['valid'] = true;
+            } else {
+                $check['logout']['valid'] = false;
+            }
+            return $check;
         }
     }
 /*

@@ -2,14 +2,15 @@
     require_once $_['fs_root'].'includes/lib/auth/classes/activate.php';
     require_once $_['fs_root'].'includes/lib/auth/classes/auth.php';
     require_once $_['fs_root'].'includes/lib/auth/classes/login.php';
+    require_once $_['fs_root'].'includes/lib/auth/classes/logout.php';
     require_once $_['fs_root'].'includes/lib/auth/classes/protect.php';
+    require_once $_['fs_root'].'includes/lib/auth/classes/recaptchalib.php';
     require_once $_['fs_root'].'includes/lib/auth/classes/register.php';
     require_once $_['fs_root'].'includes/lib/auth/classes/validate_email.php';
     require_once $_['fs_root'].'includes/lib/auth/classes/validate_password.php';
     require_once $_['fs_root'].'includes/lib/auth/classes/validate_username.php';
     require_once $_['fs_root'].'includes/lib/auth/localizations/'.$_['localization'].'.php';
 
-    require_once $_['fs_root'].'includes/lib/auth/classes/recaptchalib.php';
 
     if (
         isset($auth['hash']['preference']) and

@@ -27,7 +27,6 @@
                 ) {
                     $check['username']['valid'] = true;
                     if (auth::checkPass($_, $auth, $password, $row['UserPassword'])) {
-                        echo 'SUCCESS';
                         /*
                         $token=auth::makeToken($_);
                         // TODO: add UserLastLogin to database and update the value
@@ -41,6 +40,10 @@
 
                         $check['password']['valid'] = true;
                         $check['success'] = true;
+
+                        $check['login']['valid'] = true;
+                        $_SESSION['user']['valid'] = true;
+                        $_SESSION['user']['name'] = $row['UserName'];
                     }
                 } else {
                     $check['username'] = false;

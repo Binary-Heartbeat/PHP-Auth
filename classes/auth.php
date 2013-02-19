@@ -94,14 +94,20 @@
             return md5(rand(1000000,9999999)).md5(rand(1000000,9999999));
         }
 
-        public static function verify() // TODO: verify if the current login is valid
+        public static function verify($_) // TODO: verify if the current login is valid
         {
-            ;
-        }
-
-        public static function deny() // TODO: check if login is valid, deny if not
-        {
-            ;
+            if (
+                isset($_SESSION['user']['valid']) and
+                $_SESSION['user']['valid'] == true
+            )
+            {
+                $user['valid'] = true;
+                $user['name'] = $_SESSION['user']['name'];
+            } else {
+                $user['valid'] = false;
+                $user['name'] = 'Guest';
+            }
+            return $user;
         }
 
         public static function getCaptcha($auth, $check, $page)
